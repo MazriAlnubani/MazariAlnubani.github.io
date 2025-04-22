@@ -1,59 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mazari Alnubani - Road Planning</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        #map {
-            width: 100%;
-            height: 100vh;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <title>Mazari Alnubani Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
-    <div id="map"></div>
+  <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // Initialize the map
-        const map = L.map('map').setView([32.084, 35.180], 14); // Coordinates for Mazari Alnubani
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-        // Add Esri World Imagery basemap
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{x}/{y}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ',
-            maxZoom: 20
-        }).addTo(map);
+  <script>
+    const map = L.map('map').setView([32.083, 35.198], 15); // إحداثيات مزارع النوباني
 
-        // Layer control
-        const layerControl = L.control.layers().addTo(map);
+    // Basemap: World Imagery
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '© Esri, Maxar, Earthstar Geographics'
+    }).addTo(map);
 
-        // List of GeoJSON files
-        const geojsonFiles = [
-            "Boundary_Master_plan_proposed.geojson",
-            "Ump_blocks.geojson",
-            "Ump_expansion.geojson",
-            "boundry_master.geojson",
-            "mazari.geojson",
-            "roads_network.geojson",
-            "tapo_annotation2.json",
-            "tapo_annotation_expansion.geojson",
-            "tapo_bocks.geojson",
-            "tapo_bountry.geojson",
-            "tapo_text.geojson"
-        ];
+    // طبقات GeoJSON
+    const layers = {
+      "Boundary Master Plan Proposed": "Boundary_Master_plan_proposed.geojson",
+      "UMP Blocks": "Ump_blocks.geojson",
+      "UMP Expansion": "Ump_expansion.geojson",
+      "Boundary Master": "boundary_master.geojson",
+      "Mazari": "mazari.geojson",
+      "Roads Network": "roads_network.geojson",
+      "Tapo Annotation": "tapo_annotation2.json",
+      "Tapo Expansion Annotation": "tapo_annotation_expansion.geojson",
+      "Tapo Blocks": "tapo_blocks.geojson",
+      "Tapo Boundary": "tapo_boundary.geojson",
+      "Tapo Text": "tapo_text.geojson"
+    };
 
-        // Load and add GeoJSON layers to the map
-        geojsonFiles.forEach(file => {
-            fetch(file)
-                .then(response => response.json())
-                .then(data => {
-                    const layer = L.geoJSON(data);
-                    layerControl.addOverlay(layer, file); // Add to layer control
-                })
-                .catch(error => console.error(`Error loading ${file}:`, error));
-        });
-    </script>
+    const overlayMaps = {};
+
+    for (const [name, file] of Object.entries(layers)) {
+      fetch(file)
+        .then(res => res.json())
+        .then(data => {
+          const layer = L.geoJSON(data);
+          layer.addTo(map);
+          overlayMaps[name] = layer;
+          L.control.layers(null, overlayMaps, { collapsed: false }).addTo(map);
+        })
+        .catch(err => console.error(`فشل تحميل ${file}:`, err));
+    }
+  </script>
 </body>
 </html>
